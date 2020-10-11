@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30517.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Calamity", "Calamity\Calamity.csproj", "{AA207897-915E-4503-BBC2-2252BB609035}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AA207897-915E-4503-BBC2-2252BB609035}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA207897-915E-4503-BBC2-2252BB609035}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA207897-915E-4503-BBC2-2252BB609035}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA207897-915E-4503-BBC2-2252BB609035}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {27221394-343A-4735-828C-34CB5CE4924E}
+	EndGlobalSection
+EndGlobal
