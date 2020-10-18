@@ -1,4 +1,6 @@
 ﻿using Dalamud.Plugin;
+using System;
+using System.ComponentModel;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -21,22 +23,43 @@ namespace Calamity
             StartServer();
         }
 
-        public void Dispose() => StopServer();
+        public void Dispose()
+        {
+            StopServer();
+            GC.SuppressFinalize(this);
+        }
 
         #region HttpServer
 
         private readonly string[] PREFIXES = new string[] { "localhost", "127.0.0.1" };
         private readonly int PORT = 37435;
         private readonly string UNLOAD_DALAMUD_PATH = "/unload_dalamud";
-        private readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-        private HttpListener Listener { get; } = new HttpListener();
+        private HttpListener Listener { get; set; }
+
+        private CancellationTokenSource ShutdownTokenSource { get; set; }
+
+        private Task ListenerTask { get; set; }
 
         private void ListenerLoop(CancellationToken token)
         {
-            while (!token.IsCancellationRequested)
+            while (Listener.IsListening)
             {
-                var context = Listener.GetContext();
+                HttpListenerContext context;
+                try
+                {
+                    context = Listener.GetContext();
+                }
+                catch (HttpListenerException ex)
+                {
+                    // Shutdown usually throws some sort of I/O exception.
+                    // If we're shuttiing down, ignore it.
+                    if (token.IsCancellationRequested)
+                        return;
+                    else
+                        throw ex;
+                }
+
                 if (context.Request.Url.PathAndQuery == UNLOAD_DALAMUD_PATH)
                 {
                     context.Response.StatusCode = 200;
@@ -57,11 +80,13 @@ namespace Calamity
                     context.Response.OutputStream.Close();
                 }
             }
-            Listener.Stop();
         }
 
         private void StartServer()
         {
+            Listener = new HttpListener();
+            ShutdownTokenSource = new CancellationTokenSource();
+
             if (Listener.IsListening)
             {
                 PluginLog.Warning($"Listener is already listening");
@@ -82,7 +107,7 @@ namespace Calamity
                 return;
             }
 
-            Task.Factory.StartNew(() => ListenerLoop(tokenSource.Token));
+            ListenerTask = Task.Factory.StartNew(() => ListenerLoop(ShutdownTokenSource.Token));
 
             PluginLog.Information("The Seventh Umbral Calamity looms");
         }
@@ -91,7 +116,11 @@ namespace Calamity
         {
             if (!Listener.IsListening)
                 return;
-            tokenSource.Cancel();
+
+            ShutdownTokenSource?.Cancel();
+            Listener?.Stop();
+            Listener?.Close();
+            ListenerTask?.Wait();
         }
 
         #endregion
